@@ -1,3 +1,6 @@
+# complied files
+target/
+
 # mac file
 *.DS_Store
 
