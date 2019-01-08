@@ -5,28 +5,29 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-import java.nio.charset.StandardCharsets;
-
 class NettyTimeClientHandler extends ChannelInboundHandlerAdapter {
-    private final ByteBuf msg;
+    private byte[] request;
 
     NettyTimeClientHandler() {
-        byte[] request = "time".getBytes();
-        this.msg = Unpooled.buffer(request.length);
-        msg.writeBytes(request);
+        //每条数据结尾加上换行符
+        request = ("time" + System.getProperty("line.separator")).getBytes();
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx){
-        ctx.writeAndFlush(msg);
+        for (int i = 0; i < 50; i++) {
+            ByteBuf buf = Unpooled.buffer(request.length);
+            buf.writeBytes(request);
+            ctx.writeAndFlush(buf);
+        }
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg){
-        ByteBuf buf = (ByteBuf) msg;
-        byte[] bytes = new byte[buf.readableBytes()];
-        buf.readBytes(bytes);
-        String response = new String(bytes, StandardCharsets.UTF_8);
+        String response = (String) msg;
+        //byte[] bytes = new byte[buf.readableBytes()];
+        //buf.readBytes(bytes);
+        //String response = new String(bytes, StandardCharsets.UTF_8);
         System.out.println("From server: " + response);
     }
 

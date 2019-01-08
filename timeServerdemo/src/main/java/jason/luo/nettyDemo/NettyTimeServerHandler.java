@@ -14,17 +14,22 @@ import java.util.Date;
  */
 class NettyTimeServerHandler extends ChannelInboundHandlerAdapter {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private int count;
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        ByteBuf buf = (ByteBuf) msg;
-        byte[] bytes = new byte[buf.readableBytes()];
-        buf.readBytes(bytes);
-        String request = new String(bytes, StandardCharsets.UTF_8);
-        System.out.println("From client: " + request);
+        //ChildChannelHandler中的StringDecoder已经将msg转为字符串对象
+        String request = (String) msg;
+        //byte[] bytes = new byte[buf.readableBytes()];
+        //buf.readBytes(bytes);
+        //String request = new String(bytes, StandardCharsets.UTF_8);
+        count++;  //每收到一条客户端信息就加一
+        System.out.println("The "+count+" message from client: " + request);
 
         if ("time".equals(request)){
             String currentTime = dateFormat.format(new Date());
-            String response = "Current date time is " + currentTime;
+            String response = "The "+count+" message, current date time is " + currentTime
+                    + System.getProperty("line.separator");  //每条数据结尾加上换行符
             ByteBuf res = Unpooled.copiedBuffer(response.getBytes());
             ctx.write(res);
         }
